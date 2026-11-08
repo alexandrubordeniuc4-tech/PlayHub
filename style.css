@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  
+  <!-- Настройки для установки на телефон как приложения (PWA) -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PlayHub" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#05060a" />
+  
+  <title>PlayHub // Игровой Дневник</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --ambient: #ef4444;
+      --ambient-rgb: 239, 68, 68;
+      --bg-dark: #05060a;
+      --border-light: rgba(255, 255, 255, 0.09);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      line-height: 1.45;
+    }
+
+    h1, h2, h3, h4, .font-display {
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* ================= ПЛАВНЫЕ ФОНОВЫЕ ГРАДИЕНТЫ И ОБЪЕМНЫЕ ЛУЧИ ================= */
+    .scene-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% -12%, rgba(var(--ambient-rgb), 0.45) 0%, transparent 62%),
+        radial-gradient(circle at 12% 25%, rgba(var(--ambient-rgb), 0.25) 0%, transparent 48%),
+        radial-gradient(circle at 88% 78%, rgba(var(--ambient-rgb), 0.22) 0%, transparent 52%),
+        linear-gradient(180deg, #06070d 0%, #090b14 50%, #040508 100%);
+      will-change: background;
+    }
+
+    .god-rays {
+      position: fixed;
+      top: -35%;
+      left: -20%;
+      width: 140%;
+      height: 130%;
+      pointer-events: none;
+      z-index: 0;
+      mix-blend-mode: screen;
+      opacity: 0.78;
+      filter: blur(44px);
+      background:
+        conic-gradient(
+          from 145deg at 50% 0%,
+          transparent 0deg,
+          rgba(var(--ambient-rgb), 0.36) 18deg,
+          transparent 36deg,
+          rgba(var(--ambient-rgb), 0.20) 54deg,
+          transparent 72deg,
+          rgba(var(--ambient-rgb), 0.40) 92deg,
+          transparent 115deg
+        );
+      animation: raysPulse 11s ease-in-out infinite alternate;
+      will-change: background, transform;
+    }
+
+    .light-beams {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        linear-gradient(115deg,
+          transparent 15%,
+          rgba(var(--ambient-rgb), 0.13) 28%,
+          transparent 38%,
+          rgba(var(--ambient-rgb), 0.09) 52%,
+          transparent 64%,
+          rgba(var(--ambient-rgb), 0.15) 76%,
+          transparent 88%
+        );
+      filter: blur(26px);
+      mix-blend-mode: screen;
+      will-change: background;
+    }
+
+    @keyframes raysPulse {
+      0% { transform: rotate(-3deg) scale(1); opacity: 0.65; }
+      100% { transform: rotate(3deg) scale(1.08); opacity: 0.9; }
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 2;
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 24px 18px 90px;
+    }
+
+    .glass-panel {
+      background: linear-gradient(145deg, rgba(22, 26, 42, 0.78) 0%, rgba(11, 13, 22, 0.88) 100%);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+    }
+
+    /* ================= ШАПКА И НОВЫЙ ПРЕМИУМ-ЛОГОТИП PLAYHUB ================= */
+    .header-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px 24px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header-bar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 8%;
+      right: 8%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(var(--ambient-rgb), 0.9), transparent);
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    /* Сложная многослойная эмблема PlayHub */
+    .logo-emblem {
+      width: 64px;
+      height: 64px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-glow-ring {
+      position: absolute;
+      inset: -4px;
+      border-radius: 22px;
+      background: conic-gradient(from 0deg, transparent, rgba(var(--ambient-rgb), 0.95), #38bdf8, transparent 70%);
+      filter: blur(8px);
+      opacity: 0.85;
+      animation: spinGlow 7s linear infinite;
+    }
+
+    @keyframes spinGlow {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .logo-inner {
+      position: relative;
+      width: 62px;
+      height: 62px;
+      border-radius: 19px;
+      background: radial-gradient(circle at 30% 25%, rgba(var(--ambient-rgb), 0.45), #0b0e18 75%);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow:
+        0 12px 28px -6px rgba(var(--ambient-rgb), 0.65),
+        inset 0 1px 3px rgba(255, 255, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .logo-inner svg {
+      width: 48px;
+      height: 48px;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+    }
+
+    .brand-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-name {
+      font-size: 31px;
+      font-weight: 900;
+      letter-spacing: -0.6px;
+      display: flex;
+      align-items: baseline;
+    }
+
+    .brand-name-play {
+      color: #ffffff;
+      text-shadow: 0 0 24px rgba(255, 255, 255, 0.25);
+    }
+
+    .brand-name-hub {
+      background: linear-gradient(135deg, #ffffff 0%, var(--ambient) 85%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-left: 2px;
+    }
+
+    .brand-badge {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(var(--ambient-rgb), 0.18);
+      border: 1px solid rgba(var(--ambient-rgb), 0.45);
+      color: #f1f5f9;
+    }
+
+    .brand-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--ambient) 0%, #4f46e5 100%);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      padding: 12px 22px;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 25px -5px rgba(var(--ambient-rgb), 0.65);
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 32px -4px rgba(var(--ambient-rgb), 0.85);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.97);
+    }
+
+    /* ================= СТАТИСТИКА ================= */
+    .stats-layout {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      right: -20px;
+      width: 75px;
+      height: 75px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(var(--ambient-rgb), 0.26), transparent 70%);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .stat-value-row {
+      margin-top: 10px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .stat-number {
+      font-family: 'Outfit', sans-serif;
+      font-size: 30px;
+      font-weight: 800;
+    }
+
+    .taste-box {
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .taste-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .taste-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    .taste-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 20px;
+    }
+
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .bar-track {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.5s ease;
+    }
+
+    /* ================= ПАНЕЛЬ ФИЛЬТРОВ ================= */
+    .controls-bar {
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .controls-left {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .input-search {
+      flex: 1;
+      min-width: 210px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid var(--border-light);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .input-search:focus {
+      border-color: var(--ambient);
+    }
+
+    .seg-group {
+      display: inline-flex;
+      background: rgba(0, 0, 0, 0.45);
+      padding: 4px;
+      border-radius: 14px;
+      border: 1px solid var(--border-light);
+    }
+
+    .seg-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .seg-btn.active {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .select-sort {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid var(--border-light);
+      color: #e2e8f0;
+      padding: 9px 12px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 500;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* ================= КАРТОЧКИ ИГР ================= */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
+      gap: 22px;
+    }
+
+    .game-card {
+      background: linear-gradient(180deg, rgba(22, 26, 40, 0.88) 0%, rgba(10, 12, 20, 0.96) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 24px;
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.45s ease, box-shadow 0.45s ease;
+      position: relative;
+    }
+
+    .game-card:hover {
+      transform: translateY(-7px);
+      border-color: rgba(var(--ambient-rgb), 0.65);
+      box-shadow: 0 22px 45px -12px rgba(0, 0, 0, 0.85), 0 0 35px -5px rgba(var(--ambient-rgb), 0.35);
+    }
+
+    .poster-wrap {
+      position: relative;
+      aspect-ratio: 3 / 4;
+      width: 100%;
+      overflow: hidden;
+      background: #05060a;
+    }
+
+    .poster-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.55s ease;
+    }
+
+    .game-card:hover .poster-wrap img {
+      transform: scale(1.06);
+    }
+
+    .poster-shade {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, #0a0c14 4%, rgba(10, 12, 20, 0.2) 55%, rgba(0, 0, 0, 0.4) 100%);
+    }
+
+    .poster-top {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .fav-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      transition: transform 0.2s;
+    }
+
+    .fav-btn:hover {
+      transform: scale(1.15);
+    }
+
+    .poster-bottom {
+      position: absolute;
+      bottom: 12px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .genre-pill {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(4px);
+      color: #e2e8f0;
+    }
+
+    .card-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 5px;
+      line-height: 1.2;
+    }
+
+    .score-pill {
+      padding: 5px 10px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .card-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      justify-content: space-between;
+    }
+
+    .duel-mini {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 10px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 12px;
+    }
+
+    .duel-mini-col {
+      overflow: hidden;
+    }
+
+    .duel-mini-col:last-child {
+      border-left: 1px solid rgba(255, 255, 255, 0.09);
+      padding-left: 8px;
+    }
+
+    .role-tag-hero {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #38bdf8;
+      display: block;
+    }
+
+    .role-tag-villain {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #fb7185;
+      display: block;
+    }
+
+    .duel-name {
+      font-weight: 600;
+      color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+      margin-top: 2px;
+    }
+
+    .card-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .tier-badge {
+      font-family: 'Outfit', sans-serif;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 4px 10px;
+      border-radius: 8px;
+      letter-spacing: 0.8px;
+      color: #fff;
+      display: inline-block;
+    }
+    .tier-S { background: linear-gradient(135deg, #f59e0b, #ef4444); box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4); }
+    .tier-A { background: linear-gradient(135deg, #8b5cf6, #ec4899); box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4); }
+    .tier-B { background: linear-gradient(135deg, #3b82f6, #06b6d4); box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35); }
+    .tier-C { background: linear-gradient(135deg, #10b981, #059669); }
+    .tier-D { background: linear-gradient(135deg, #6b7280, #374151); }
+
+    /* ================= ТИР-ЛИСТ ================= */
+    .tier-list-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .tier-row {
+      display: flex;
+      gap: 16px;
+      padding: 14px;
+      align-items: center;
+    }
+
+    .tier-label-box {
+      width: 120px;
+      min-height: 78px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 10px;
+      flex-shrink: 0;
+    }
+
+    .tier-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      flex: 1;
+      align-items: center;
+    }
+
+    .tier-mini-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border-light);
+      padding: 6px 12px 6px 6px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .tier-mini-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .tier-mini-card img {
+      width: 42px;
+      height: 54px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    /* ================= МОДАЛЬНЫЕ ОКНА ================= */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(3, 4, 8, 0.84);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 880px;
+      border-radius: 28px;
+      background: #0b0d16;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      overflow: hidden;
+      position: relative;
+      margin: auto;
+      max-height: 92vh;
+      overflow-y: auto;
+      animation: popIn 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: border-color 0.6s ease, box-shadow 0.6s ease;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .detail-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 26px;
+      padding: 28px;
+      position: relative;
+    }
+
+    .detail-poster {
+      aspect-ratio: 3 / 4;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
+    }
+
+    .detail-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .detail-Right {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .detail-scores-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .score-cell {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 10px;
+      border-radius: 12px;
+    }
+
+    .duel-cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .char-box-hero {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.14), rgba(15, 23, 42, 0.7));
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 18px;
+      padding: 14px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .char-box-villain {
+      background: linear-gradient(135deg, rgba(244, 63, 94, 0.14), rgba(15, 23, 42, 0.7));
+      border: 1px solid rgba(251, 113, 133, 0.3);
+      border-radius: 18px;
+      padding: 14px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .char-avatar {
+      width: 66px;
+      height: 66px;
+      border-radius: 16px;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* ================= ФОРМА ДОБАВЛЕНИЯ ИГРЫ ================= */
+    .form-pad {
+      padding: 26px;
+    }
+
+    .form-top-grid {
+      display: grid;
+      grid-template-columns: 210px 1fr;
+      gap: 22px;
+      margin-bottom: 20px;
+    }
+
+    .upload-cover-box {
+      aspect-ratio: 3 / 4;
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px dashed rgba(255, 255, 255, 0.24);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .upload-cover-box:hover {
+      border-color: var(--ambient);
+      box-shadow: 0 0 24px rgba(var(--ambient-rgb), 0.3);
+    }
+
+    .upload-cover-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .text-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 10px 13px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .text-input:focus {
+      border-color: var(--ambient);
+    }
+
+    .row-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .upload-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      width: 100%;
+    }
+
+    .upload-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .char-upload-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .char-preview-circle {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px dashed rgba(255, 255, 255, 0.25);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 20px;
+    }
+
+    .char-preview-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 99px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid var(--ambient);
+      box-shadow: 0 0 12px rgba(var(--ambient-rgb), 0.9);
+      cursor: pointer;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 860px) {
+      .stats-layout { grid-template-columns: 1fr; }
+      .stats-cards { grid-template-columns: repeat(2, 1fr); }
+      .detail-layout { grid-template-columns: 1fr; padding: 20px; }
+      .detail-poster { max-width: 240px; margin: 0 auto; }
+      .duel-cards-grid, .row-2, .form-top-grid { grid-template-columns: 1fr; }
+      .upload-cover-box { max-width: 200px; margin: 0 auto; }
+      .tier-row { flex-direction: column; align-items: stretch; }
+      .tier-label-box { width: 100%; min-height: 52px; flex-direction: row; gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Многослойный градиентный фон и объемные лучи (плавно перетекают через JS-интерполяцию) -->
+  <div class="scene-bg"></div>
+  <div class="god-rays"></div>
+  <div class="light-beams"></div>
+
+  <div class="app-container">
+
+    <!-- ШАПКА PLAYHUB С НОВЫМ 3D-ЛОГОТИПОМ -->
+    <header class="glass-panel header-bar">
+      <div class="brand-wrap">
+        <div class="logo-emblem">
+          <div class="logo-glow-ring"></div>
+          <div class="logo-inner">
+            <!-- Сложный многослойный кибер-логотип PlayHub -->
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="hexGrad" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+                  <stop offset="45%" stop-color="#e2e8f0" stop-opacity="0.85"/>
+                  <stop offset="100%" stop-color="#94a3b8" stop-opacity="0.4"/>
+                </linearGradient>
+                <linearGradient id="coreGlow" x1="16" y1="16" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#38bdf8"/>
+                  <stop offset="50%" stop-color="#8b5cf6"/>
+                  <stop offset="100%" stop-color="#f43f5e"/>
+                </linearGradient>
+              </defs>
+              <!-- Внешний граненый щит-призма -->
+              <polygon points="32,4 56,17 56,47 32,60 8,47 8,17" stroke="url(#hexGrad)" stroke-width="2.2" fill="rgba(255,255,255,0.04)" />
+              <!-- Внутренний энергетический контур -->
+              <polygon points="32,10 50,20 50,44 32,54 14,44 14,20" stroke="url(#coreGlow)" stroke-width="1.4" stroke-dasharray="6 3" fill="none" opacity="0.85" />
+              <!-- Силуэт геймпада следующего поколения + символ Play в центре -->
+              <path d="M20 25C16.5 25 14 28.2 13.2 33.5C12.3 39.2 14.2 43 17.2 43C19.5 43 21.2 40.5 23.2 38H40.8C42.8 40.5 44.5 43 46.8 43C49.8 43 51.7 39.2 50.8 33.5C50 28.2 47.5 25 44 25H20Z" fill="url(#coreGlow)" fill-opacity="0.28" stroke="#ffffff" stroke-width="2.2" stroke-linejoin="round"/>
+              <!-- Крестовина слева -->
+              <path d="M19.5 32.5H24.5M22 30V35" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+              <!-- Кнопки справа -->
+              <circle cx="43.5" cy="31" r="1.5" fill="#38bdf8"/>
+              <circle cx="40" cy="34" r="1.5" fill="#f43f5e"/>
+              <!-- Центральный кристалл Play -->
+              <polygon points="30,28.5 30,35.5 36,32" fill="#ffffff"/>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="brand-title-row">
+            <h1 class="brand-name">
+              <span class="brand-name-play">Play</span><span class="brand-name-hub">Hub</span>
+            </h1>
+            <span class="brand-badge">Ultimate</span>
+          </div>
+          <p class="brand-sub">Личный зал славы пройденных игр, оценок и героев</p>
+        </div>
+      </div>
+
+      <button onclick="openGameModal()" class="btn-primary">
+        <span style="font-size: 18px; line-height: 1;">+</span>
+        <span>Добавить игру</span>
+      </button>
+    </header>
+
+    <!-- СТАТИСТИКА -->
+    <section class="stats-layout">
+      <div class="stats-cards">
+        <div class="glass-panel stat-card">
+          <span class="stat-label">Пройдено игр</span>
+          <div class="stat-value-row">
+            <span id="statTotalGames" class="stat-number">0</span>
+            <span style="font-size: 11px; color: #34d399; font-weight: 700;">100%</span>
+          </div>
+        </div>
+        <div class="glass-panel stat-card">
+          <span class="stat-label">Средний балл</span>
+          <div class="stat-value-row">
+            <span id="statAvgScore" class="stat-number" style="color: #fbbf24;">0.0</span>
+            <span style="font-size: 12px; color: var(--text-muted);">/ 10</span>
+          </div>
+        </div>
+        <div class="glass-panel stat-card">
+          <span class="stat-label">Часов в играх</span>
+          <div class="stat-value-row">
+            <span id="statTotalHours" class="stat-number" style="color: #38bdf8;">0</span>
+            <span style="font-size: 12px; color: var(--text-muted);">ч.</span>
+          </div>
+        </div>
+        <div class="glass-panel stat-card">
+          <span class="stat-label">Любимые</span>
+          <div class="stat-value-row">
+            <span id="statFavorites" class="stat-number" style="color: #fb7185;">0</span>
+            <span>❤️</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-panel taste-box">
+        <div class="taste-header">
+          <span class="taste-title">Профиль оценок</span>
+          <span id="statMasterpieces" class="brand-badge" style="color: #fde68a;">0 S-Tier</span>
+        </div>
+        <div class="taste-grid">
+          <div>
+            <div class="bar-label"><span>Сюжет</span><b id="avgStory">0.0</b></div>
+            <div class="bar-track"><div id="barStory" class="bar-fill" style="width:0%; background: linear-gradient(90deg, #6366f1, #a855f7);"></div></div>
+          </div>
+          <div>
+            <div class="bar-label"><span>Геймплей</span><b id="avgGameplay">0.0</b></div>
+            <div class="bar-track"><div id="barGameplay" class="bar-fill" style="width:0%; background: linear-gradient(90deg, #10b981, #34d399);"></div></div>
+          </div>
+          <div>
+            <div class="bar-label"><span>Атмосфера</span><b id="avgAtmosphere">0.0</b></div>
+            <div class="bar-track"><div id="barAtmosphere" class="bar-fill" style="width:0%; background: linear-gradient(90deg, #ec4899, #f43f5e);"></div></div>
+          </div>
+          <div>
+            <div class="bar-label"><span>Визуал</span><b id="avgVisuals">0.0</b></div>
+            <div class="bar-track"><div id="barVisuals" class="bar-fill" style="width:0%; background: linear-gradient(90deg, #f59e0b, #fbbf24);"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ПАНЕЛЬ ПОИСКА И ПЕРЕКЛЮЧЕНИЯ -->
+    <section class="glass-panel controls-bar">
+      <div class="controls-left">
+        <input
+          type="text"
+          id="searchInput"
+          oninput="renderAll()"
+          placeholder="Поиск по игре, жанру, ГГ или злодею..."
+          class="input-search"
+        />
+
+        <div class="seg-group">
+          <button id="filterAllBtn" onclick="setFilter('all')" class="seg-btn active">Все</button>
+          <button id="filterFavBtn" onclick="setFilter('fav')" class="seg-btn">❤️ Любимые</button>
+        </div>
+
+        <select id="sortSelect" onchange="renderAll()" class="select-sort">
+          <option value="score-desc">Сначала лучшие</option>
+          <option value="score-asc">По возрастанию оценки</option>
+          <option value="date-desc">Сначала новые</option>
+          <option value="hours-desc">Больше часов</option>
+          <option value="title-asc">По алфавиту</option>
+        </select>
+      </div>
+
+      <div class="seg-group">
+        <button id="viewGridBtn" onclick="setView('grid')" class="seg-btn active">Карточки</button>
+        <button id="viewTierBtn" onclick="setView('tier')" class="seg-btn">Тир-лист</button>
+      </div>
+    </section>
+
+    <!-- СЕТКА КАРТОЧЕК -->
+    <main id="gridView" class="games-grid"></main>
+
+    <!-- ТИР-ЛИСТ -->
+    <section id="tierView" class="tier-list-wrap hidden"></section>
+
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО ПРОСМОТРА ИГРЫ -->
+  <div id="detailModal" class="modal-overlay">
+    <div id="detailModalCard" class="modal-box"></div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ / РЕДАКТИРОВАНИЯ ИГРЫ (БЕЗ ВЫБОРА ЦВЕТА, АВТО-ЦВЕТ ОТ ОБЛОЖКИ) -->
+  <div id="formModal" class="modal-overlay">
+    <div class="modal-box form-pad">
+      <button type="button" onclick="closeFormModal()" class="close-btn">✕</button>
+      <h2 id="formModalTitle" style="font-size: 24px; font-weight: 900; margin-bottom: 18px;">Добавить игру в PlayHub</h2>
+
+      <form id="gameForm" onsubmit="saveGame(event)" style="display: flex; flex-direction: column; gap: 18px;">
+        <input type="hidden" id="gameId" />
+        <input type="hidden" id="gameColor" value="#7c3aed" />
+        <input type="hidden" id="coverData" />
+        <input type="hidden" id="heroImgData" />
+        <input type="hidden" id="villainImgData" />
+
+        <div class="form-top-grid">
+          <!-- Загрузка обложки (автоматически определяет цвет!) -->
+          <div>
+            <label class="upload-cover-box" title="Нажми, чтобы выбрать обложку">
+              <img id="coverPreviewImg" src="" alt="" class="hidden" />
+              <div id="coverPlaceholder" style="text-align: center; padding: 14px; font-size: 12px; color: var(--text-muted);">
+                🖼️<br/>Нажми, чтобы загрузить обложку<br/><span style="font-size:10px; opacity:0.75;">(цвет фона определится сам)</span>
+              </div>
+              <input type="file" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'coverData', 'coverPreviewImg', 'coverPlaceholder', true)" />
+            </label>
+            <div style="margin-top: 10px;">
+              <label class="upload-btn">
+                📁 Загрузить обложку
+                <input type="file" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'coverData', 'coverPreviewImg', 'coverPlaceholder', true)" />
+              </label>
+            </div>
+          </div>
+
+          <!-- Поля описания игры -->
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div>
+              <label class="field-label">Название игры *</label>
+              <input type="text" id="gameTitle" required placeholder="Например: Silent Hill 2 Remake" class="text-input" />
+            </div>
+
+            <div class="row-3">
+              <div>
+                <label class="field-label">Жанр</label>
+                <input type="text" id="gameGenre" placeholder="Horror / Action" class="text-input" />
+              </div>
+              <div>
+                <label class="field-label">Год</label>
+                <input type="text" id="gameYear" placeholder="2024" class="text-input" />
+              </div>
+              <div>
+                <label class="field-label">Часов</label>
+                <input type="number" id="gameHours" min="1" max="5000" value="18" class="text-input" />
+              </div>
+            </div>
+
+            <label style="display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.3); cursor: pointer; width: fit-content; margin-top: 4px;">
+              <input type="checkbox" id="gameFavorite" style="accent-color: #f43f5e; width: 16px; height: 16px;" />
+              <span style="font-size: 12px; font-weight: 700; color: #fda4af;">❤️ Добавить в «Любимые игры»</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Оценки по 4 критериям -->
+        <div style="padding: 16px; border-radius: 18px; background: rgba(0,0,0,0.4); border: 1px solid var(--border-light);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted);">Оценка по критериям</span>
+            <span id="formLiveTotal" class="brand-badge" style="font-size: 12px;">9.0 / 10</span>
+          </div>
+          <div class="row-2">
+            <div>
+              <div class="bar-label"><span>Сюжет</span><b id="valStory">9</b></div>
+              <input type="range" id="rateStory" min="1" max="10" step="0.5" value="9" oninput="updateLiveFormScore()" />
+            </div>
+            <div>
+              <div class="bar-label"><span>Геймплей</span><b id="valGameplay">8.5</b></div>
+              <input type="range" id="rateGameplay" min="1" max="10" step="0.5" value="8.5" oninput="updateLiveFormScore()" />
+            </div>
+            <div>
+              <div class="bar-label"><span>Атмосфера</span><b id="valAtmosphere">9.5</b></div>
+              <input type="range" id="rateAtmosphere" min="1" max="10" step="0.5" value="9.5" oninput="updateLiveFormScore()" />
+            </div>
+            <div>
+              <div class="bar-label"><span>Визуал</span><b id="valVisuals">9</b></div>
+              <input type="range" id="rateVisuals" min="1" max="10" step="0.5" value="9" oninput="updateLiveFormScore()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ГГ И ЗЛОДЕЙ -->
+        <div class="row-2">
+          <!-- Главный герой -->
+          <div style="padding: 15px; border-radius: 18px; background: rgba(14, 165, 233, 0.07); border: 1px solid rgba(56, 189, 248, 0.25);">
+            <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #38bdf8; margin-bottom: 10px;">🛡️ Главный герой (ГГ)</div>
+            <div class="char-upload-row">
+              <div class="char-preview-circle">
+                <img id="heroPreviewImg" src="" alt="" class="hidden" />
+                <span id="heroPlaceholder">🛡️</span>
+              </div>
+              <label class="upload-btn" style="width: auto;">
+                Загрузить фото ГГ
+                <input type="file" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'heroImgData', 'heroPreviewImg', 'heroPlaceholder', false)" />
+              </label>
+            </div>
+            <input type="text" id="heroName" placeholder="Имя ГГ (например: Джеймс Сандерленд)" class="text-input" style="margin-bottom: 8px;" />
+            <input type="text" id="heroDesc" placeholder="Чем запомнился / цитата" class="text-input" />
+          </div>
+
+          <!-- Главный злодей -->
+          <div style="padding: 15px; border-radius: 18px; background: rgba(244, 63, 94, 0.07); border: 1px solid rgba(251, 113, 133, 0.25);">
+            <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #fb7185; margin-bottom: 10px;">⚔️ Главный злодей</div>
+            <div class="char-upload-row">
+              <div class="char-preview-circle">
+                <img id="villainPreviewImg" src="" alt="" class="hidden" />
+                <span id="villainPlaceholder">⚔️</span>
+              </div>
+              <label class="upload-btn" style="width: auto;">
+                Загрузить фото злодея
+                <input type="file" accept="image/*" class="hidden" onchange="handleFileSelect(event, 'villainImgData', 'villainPreviewImg', 'villainPlaceholder', false)" />
+              </label>
+            </div>
+            <input type="text" id="villainName" placeholder="Имя злодея (например: Ваас Монтенегро)" class="text-input" style="margin-bottom: 8px;" />
+            <input type="text" id="villainDesc" placeholder="Чем запомнился / цитата" class="text-input" />
+          </div>
+        </div>
+
+        <div>
+          <label class="field-label">Мои впечатления о прохождении</label>
+          <textarea id="gameReview" rows="3" placeholder="Эмоции после титров, любимые моменты..." class="text-input"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" onclick="closeFormModal()" class="upload-btn" style="width: auto; padding: 10px 20px;">Отмена</button>
+          <button type="submit" class="btn-primary">Сохранить в PlayHub</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'playhub_collection_v1';
+    let currentView = 'grid';
+    let currentFilter = 'all';
+
+    /* ================= ДВИЖОК СВЕРХПЛАВНОГО ПЕРЕТЕКАНИЯ ЦВЕТА ФОНА ================= */
+    let currentRgb = [239, 68, 68];
+    let targetRgb = [239, 68, 68];
+    let animFrameId = null;
+
+    function hexToRgbArray(hex) {
+      const clean = (hex || '#7c3aed').replace('#', '').trim();
+      const full = clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean;
+      const num = parseInt(full, 16);
+      if (isNaN(num)) return [124, 58, 237];
+      return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+    }
+
+    function rgbArrayToHex(rgb) {
+      return '#' + rgb.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+    }
+
+    function animateAmbientStep() {
+      const speed = 0.065; // Плавное кинематографичное затухание без резких скачков
+      let done = true;
+
+      for (let i = 0; i < 3; i++) {
+        const diff = targetRgb[i] - currentRgb[i];
+        if (Math.abs(diff) > 0.4) {
+          currentRgb[i] += diff * speed;
+          done = false;
+        } else {
+          currentRgb[i] = targetRgb[i];
+        }
+      }
+
+      const r = Math.round(currentRgb[0]);
+      const g = Math.round(currentRgb[1]);
+      const b = Math.round(currentRgb[2]);
+      const hex = rgbArrayToHex([r, g, b]);
+
+      document.documentElement.style.setProperty('--ambient-rgb', `${r}, ${g}, ${b}`);
+      document.documentElement.style.setProperty('--ambient', hex);
+
+      if (!done) {
+        animFrameId = requestAnimationFrame(animateAmbientStep);
+      } else {
+        animFrameId = null;
+      }
+    }
+
+    function setAmbientColor(hex) {
+      targetRgb = hexToRgbArray(hex);
+      if (!animFrameId) {
+        animFrameId = requestAnimationFrame(animateAmbientStep);
+      }
+    }
+
+    /* ================= УМНОЕ АВТООПРЕДЕЛЕНИЕ ЯРКОГО ЦВЕТА ОБЛОЖКИ ================= */
+    function extractVibrantCoverColor(imgEl, callback) {
+      try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 48;
+        canvas.height = 48;
+        ctx.drawImage(imgEl, 0, 0, 48, 48);
+        const data = ctx.getImageData(0, 0, 48, 48).data;
+
+        let bestR = 124, bestG = 58, bestB = 237;
+        let totalWeight = 0;
+        let weightedR = 0, weightedG = 0, weightedB = 0;
+
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i], g = data[i + 1], b = data[i + 2];
+          const max = Math.max(r, g, b);
+          const min = Math.min(r, g, b);
+          const lum = (max + min) / 2;
+          const sat = max === min ? 0 : (max - min) / (255 - Math.abs(2 * lum - 255));
+
+          // Игнорируем слишком черные, слишком белые и грязно-серые пиксели
+          if (lum > 28 && lum < 235 && sat > 0.18) {
+            // Чем насыщеннее пиксель на обложке, тем сильнее его вес
+            const weight = Math.pow(sat, 2) * (1 - Math.abs(lum - 135) / 135);
+            weightedR += r * weight;
+            weightedG += g * weight;
+            weightedB += b * weight;
+            totalWeight += weight;
+          }
+        }
+
+        if (totalWeight > 0) {
+          bestR = Math.round(weightedR / totalWeight);
+          bestG = Math.round(weightedG / totalWeight);
+          bestB = Math.round(weightedB / totalWeight);
+
+          // Слегка усиливаем яркость и сочность для красивых фоновых лучей
+          const maxC = Math.max(bestR, bestG, bestB);
+          if (maxC < 190 && maxC > 0) {
+            const boost = 205 / maxC;
+            bestR = Math.min(255, Math.round(bestR * boost));
+            bestG = Math.min(255, Math.round(bestG * boost));
+            bestB = Math.min(255, Math.round(bestB * boost));
+          }
+        } else {
+          // Если обложка черно-белая, берем средний тон
+          let rSum = 0, gSum = 0, bSum = 0, cnt = 0;
+          for (let i = 0; i < data.length; i += 4) {
+            rSum += data[i]; gSum += data[i+1]; bSum += data[i+2]; cnt++;
+          }
+          if (cnt > 0) {
+            bestR = Math.max(70, Math.round(rSum / cnt));
+            bestG = Math.max(70, Math.round(gSum / cnt));
+            bestB = Math.max(95, Math.round(bSum / cnt));
+          }
+        }
+
+        callback(rgbArrayToHex([bestR, bestG, bestB]));
+      } catch (e) {
+        callback('#7c3aed');
+      }
+    }
+
+    function makePosterSVG(title, subtitle, c1, c2, accent) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
+        <defs>
+          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="${c1}"/>
+            <stop offset="55%" stop-color="${c2}"/>
+            <stop offset="100%" stop-color="#05060a"/>
+          </linearGradient>
+          <radialGradient id="r" cx="65%" cy="22%" r="60%">
+            <stop offset="0%" stop-color="${accent}" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="${accent}" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <rect width="600" height="800" fill="url(#g)"/>
+        <rect width="600" height="800" fill="url(#r)"/>
+        <polygon points="0,0 600,0 420,800 0,800" fill="${accent}" fill-opacity="0.06"/>
+        <circle cx="470" cy="180" r="180" fill="none" stroke="${accent}" stroke-opacity="0.22" stroke-width="2"/>
+        <path d="M 0 610 L 600 460 L 600 800 L 0 800 Z" fill="#05060a" fill-opacity="0.72"/>
+        <rect x="44" y="540" width="74" height="6" rx="3" fill="${accent}"/>
+        <text x="44" y="605" fill="#ffffff" font-family="Outfit, sans-serif" font-weight="900" font-size="45">${title}</text>
+        <text x="44" y="646" fill="#cbd5e1" font-family="Inter, sans-serif" font-weight="700" font-size="19" letter-spacing="3" opacity="0.85">${subtitle}</text>
+      </svg>`;
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
+
+    function makeAvatarSVG(name, color, roleLabel) {
+      const initials = (name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+        <defs>
+          <linearGradient id="av" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="${color}"/>
+            <stop offset="100%" stop-color="#090b12"/>
+          </linearGradient>
+        </defs>
+        <rect width="200" height="200" rx="36" fill="url(#av)"/>
+        <text x="100" y="112" text-anchor="middle" fill="#ffffff" font-family="Outfit, sans-serif" font-weight="900" font-size="60">${initials}</text>
+        <text x="100" y="166" text-anchor="middle" fill="#ffffff" opacity="0.7" font-family="Inter, sans-serif" font-weight="700" font-size="15" letter-spacing="2">${roleLabel}</text>
+      </svg>`;
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
+
+    const DEFAULT_GAMES = [
+      {
+        id: 'sh2r',
+        title: 'Silent Hill 2 Remake',
+        genre: 'Psychological Horror',
+        year: '2024',
+        hours: 19,
+        favorite: true,
+        color: '#ef4444',
+        coverUrl: makePosterSVG('SILENT HILL 2', 'REMAKE // BLOOBER TEAM', '#3b0a10', '#0f1319', '#ef4444'),
+        ratings: { story: 10, gameplay: 8.5, atmosphere: 10, visuals: 9.5 },
+        hero: {
+          name: 'Джеймс Сандерленд',
+          img: '',
+          desc: 'Отправился в туманный Сайлент-Хилл после письма от погибшей жены Мэри.'
+        },
+        villain: {
+          name: 'Пирамидоголовый',
+          img: '',
+          desc: 'Воплощение чувства вины и неотвратимого наказания.'
+        },
+        review: 'Невероятно густая атмосфера тумана, эталонный звук и глубокий психологический сюжет.'
+      },
+      {
+        id: 'dbh',
+        title: 'Detroit: Become Human',
+        genre: 'Interactive Drama',
+        year: '2018',
+        hours: 16,
+        favorite: true,
+        color: '#0ea5e9',
+        coverUrl: makePosterSVG('DETROIT', 'BECOME HUMAN', '#082f49', '#090d16', '#38bdf8'),
+        ratings: { story: 9.5, gameplay: 8.0, atmosphere: 9.5, visuals: 9.5 },
+        hero: {
+          name: 'Коннор RK800',
+          img: '',
+          desc: 'Охотник на девиантов и напарник лейтенанта Хэнка. «28 ударов ножом!»'
+        },
+        villain: {
+          name: 'Аманда / Киберлайф',
+          img: '',
+          desc: 'Холодная цифровая наставница, контролирующая программу Коннора.'
+        },
+        review: 'Огромная вариативность решений и крутая динамика между Коннором и Хэнком.'
+      },
+      {
+        id: 'fc3',
+        title: 'Far Cry 3',
+        genre: 'Action Adventure',
+        year: '2012',
+        hours: 24,
+        favorite: true,
+        color: '#f59e0b',
+        coverUrl: makePosterSVG('FAR CRY 3', 'ROOK ISLANDS', '#451a03', '#0c131f', '#f59e0b'),
+        ratings: { story: 9.0, gameplay: 9.5, atmosphere: 9.0, visuals: 8.5 },
+        hero: {
+          name: 'Джейсон Броуди',
+          img: '',
+          desc: 'Проходит путь от обычного туриста до беспощадного воина джунглей.'
+        },
+        villain: {
+          name: 'Ваас Монтенегро',
+          img: '',
+          desc: '«Я уже говорил тебе, что такое безумие?» Харизма 10 из 10.'
+        },
+        review: 'Тропический остров, захват аванпостов и легендарные монологи Вааса.'
+      },
+      {
+        id: 're7',
+        title: 'Resident Evil 7: Biohazard',
+        genre: 'Survival Horror',
+        year: '2017',
+        hours: 12,
+        favorite: false,
+        color: '#84cc16',
+        coverUrl: makePosterSVG('RESIDENT EVIL 7', 'BIOHAZARD // DULVEY', '#1a2e05', '#0b0e14', '#84cc16'),
+        ratings: { story: 8.5, gameplay: 9.0, atmosphere: 9.5, visuals: 9.0 },
+        hero: {
+          name: 'Итан Уинтерс',
+          img: '',
+          desc: 'Приехал в поместье в Луизиане, чтобы спасти свою жену Мию.'
+        },
+        villain: {
+          name: 'Джек Бейкер / Эвелина',
+          img: '',
+          desc: 'Глава безумной семейки Бейкеров и биооружие Эвелина.'
+        },
+        review: 'Первая половина игры в доме Бейкеров держит в максимальном напряжении.'
+      }
+    ];
+
+    let games = [];
+
+    function loadGames() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('playlog_games_v3_duel');
+        games = raw ? JSON.parse(raw) : DEFAULT_GAMES;
+      } catch (e) {
+        games = DEFAULT_GAMES;
+      }
+    }
+
+    function saveToStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+    }
+
+    function calcScore(r) {
+      return Number(((Number(r.story) + Number(r.gameplay) + Number(r.atmosphere) + Number(r.visuals)) / 4).toFixed(1));
+    }
+
+    function getTier(score) {
+      if (score >= 9.2) return 'S';
+      if (score >= 8.3) return 'A';
+      if (score >= 7.2) return 'B';
+      if (score >= 6.0) return 'C';
+      return 'D';
+    }
+
+    // Загрузка обложки и фото персонажей с автоопределением цвета обложки
+    function handleFileSelect(event, hiddenInputId, previewImgId, placeholderId, detectColor) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const maxW = 540;
+          const scale = Math.min(1, maxW / img.width);
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+          document.getElementById(hiddenInputId).value = dataUrl;
+          const prev = document.getElementById(previewImgId);
+          const ph = document.getElementById(placeholderId);
+          if (prev) { prev.src = dataUrl; prev.classList.remove('hidden'); }
+          if (ph) { ph.classList.add('hidden'); }
+
+          // Если загружена обложка игры — автоматически извлекаем её главный цвет и меняем фон!
+          if (detectColor) {
+            extractVibrantCoverColor(img, (detectedHex) => {
+              document.getElementById('gameColor').value = detectedHex;
+              setAmbientColor(detectedHex);
+            });
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function setPreviewState(dataUrl, previewImgId, placeholderId) {
+      const prev = document.getElementById(previewImgId);
+      const ph = document.getElementById(placeholderId);
+      if (dataUrl) {
+        prev.src = dataUrl;
+        prev.classList.remove('hidden');
+        if (ph) ph.classList.add('hidden');
+      } else {
+        prev.src = '';
+        prev.classList.add('hidden');
+        if (ph) ph.classList.remove('hidden');
+      }
+    }
+
+    function renderStats() {
+      const total = games.length;
+      document.getElementById('statTotalGames').textContent = total;
+      if (!total) return;
+
+      let sumScore = 0, sumHours = 0, favs = 0, sTier = 0;
+      let sS = 0, sG = 0, sA = 0, sV = 0;
+
+      games.forEach(g => {
+        const sc = calcScore(g.ratings);
+        sumScore += sc;
+        sumHours += Number(g.hours || 0);
+        if (g.favorite) favs++;
+        if (getTier(sc) === 'S') sTier++;
+        sS += Number(g.ratings.story);
+        sG += Number(g.ratings.gameplay);
+        sA += Number(g.ratings.atmosphere);
+        sV += Number(g.ratings.visuals);
+      });
+
+      document.getElementById('statAvgScore').textContent = (sumScore / total).toFixed(1);
+      document.getElementById('statTotalHours').textContent = sumHours;
+      document.getElementById('statFavorites').textContent = favs;
+      document.getElementById('statMasterpieces').textContent = `${sTier} S-Tier`;
+
+      const aS = (sS / total).toFixed(1), aG = (sG / total).toFixed(1), aA = (sA / total).toFixed(1), aV = (sV / total).toFixed(1);
+      document.getElementById('avgStory').textContent = aS;
+      document.getElementById('avgGameplay').textContent = aG;
+      document.getElementById('avgAtmosphere').textContent = aA;
+      document.getElementById('avgVisuals').textContent = aV;
+
+      document.getElementById('barStory').style.width = `${aS * 10}%`;
+      document.getElementById('barGameplay').style.width = `${aG * 10}%`;
+      document.getElementById('barAtmosphere').style.width = `${aA * 10}%`;
+      document.getElementById('barVisuals').style.width = `${aV * 10}%`;
+    }
+
+    function getFilteredGames() {
+      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      const sort = document.getElementById('sortSelect').value;
+
+      let list = games.filter(g => {
+        if (currentFilter === 'fav' && !g.favorite) return false;
+        if (!q) return true;
+        return (
+          g.title.toLowerCase().includes(q) ||
+          (g.genre || '').toLowerCase().includes(q) ||
+          (g.hero?.name || '').toLowerCase().includes(q) ||
+          (g.villain?.name || '').toLowerCase().includes(q)
+        );
+      });
+
+      list.sort((a, b) => {
+        if (sort === 'score-desc') return calcScore(b.ratings) - calcScore(a.ratings);
+        if (sort === 'score-asc') return calcScore(a.ratings) - calcScore(b.ratings);
+        if (sort === 'hours-desc') return (b.hours || 0) - (a.hours || 0);
+        if (sort === 'title-asc') return a.title.localeCompare(b.title, 'ru');
+        if (sort === 'date-desc') return String(b.year || '').localeCompare(String(a.year || ''));
+        return 0;
+      });
+      return list;
+    }
+
+    function renderGrid(list) {
+      const box = document.getElementById('gridView');
+      if (!list.length) {
+        box.innerHTML = `<div class="glass-panel" style="grid-column: 1/-1; padding: 48px; text-align: center; color: var(--text-muted);">Игры не найдены</div>`;
+        return;
+      }
+
+      box.innerHTML = list.map(g => {
+        const sc = calcScore(g.ratings);
+        const tier = getTier(sc);
+        const cover = g.coverUrl || makePosterSVG(g.title.toUpperCase(), g.genre || 'GAME', g.color || '#7c3aed', '#0b0f19', g.color || '#7c3aed');
+        return `
+          <article class="game-card" onclick="openDetailModal('${g.id}')" onmouseenter="setAmbientColor('${g.color || '#7c3aed'}')">
+            <div class="poster-wrap">
+              <img src="${cover}" alt="${g.title}" />
+              <div class="poster-shade"></div>
+              <div class="poster-top">
+                <span class="tier-badge tier-${tier}">${tier}-TIER</span>
+                <button class="fav-btn" onclick="toggleFavorite(event, '${g.id}')">${g.favorite ? '❤️' : '🤍'}</button>
+              </div>
+              <div class="poster-bottom">
+                <div>
+                  <span class="genre-pill">${g.genre || 'Action'}</span>
+                  <h3 class="card-title">${g.title}</h3>
+                </div>
+                <div class="score-pill" style="color: ${g.color || '#a78bfa'}">${sc.toFixed(1)}</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="duel-mini">
+                <div class="duel-mini-col">
+                  <span class="role-tag-hero">🛡️ ГГ</span>
+                  <span class="duel-name">${g.hero?.name || 'Не указан'}</span>
+                </div>
+                <div class="duel-mini-col">
+                  <span class="role-tag-villain">⚔️ Злодей</span>
+                  <span class="duel-name">${g.villain?.name || 'Не указан'}</span>
+                </div>
+              </div>
+              <div class="card-meta">
+                <span>📅 ${g.year || '—'}</span>
+                <span>⏱️ ${g.hours || 0} ч.</span>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function renderTierList(list) {
+      const tiers = ['S', 'A', 'B', 'C', 'D'];
+      const names = { S: 'Шедевры', A: 'Отличные', B: 'Хорошие', C: 'Проходные', D: 'Слабые' };
+      document.getElementById('tierView').innerHTML = tiers.map(t => {
+        const items = list.filter(g => getTier(calcScore(g.ratings)) === t);
+        return `
+          <div class="glass-panel tier-row">
+            <div class="tier-label-box tier-${t}">
+              <span style="font-size: 28px; font-weight: 900; font-family: 'Outfit';">${t}</span>
+              <span style="font-size: 10px; text-transform: uppercase; font-weight: 700;">${names[t]}</span>
+            </div>
+            <div class="tier-items">
+              ${!items.length ? `<span style="font-size: 12px; color: var(--text-muted); padding-left: 8px;">Пусто</span>` : items.map(g => {
+                const cover = g.coverUrl || makePosterSVG(g.title, '', g.color, '#090d16', g.color);
+                return `
+                  <div class="tier-mini-card" onclick="openDetailModal('${g.id}')" onmouseenter="setAmbientColor('${g.color || '#7c3aed'}')">
+                    <img src="${cover}" alt="" />
+                    <div>
+                      <div style="font-size: 13px; font-weight: 700;">${g.title}</div>
+                      <div style="font-size: 11px; color: var(--text-muted);">Балл: <b style="color:#fff;">${calcScore(g.ratings).toFixed(1)}</b></div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openDetailModal(id) {
+      const g = games.find(x => x.id === id);
+      if (!g) return;
+      const color = g.color || '#7c3aed';
+      setAmbientColor(color);
+
+      const sc = calcScore(g.ratings);
+      const tier = getTier(sc);
+      const cover = g.coverUrl || makePosterSVG(g.title.toUpperCase(), g.genre || 'GAME', color, '#0b0f19', color);
+      const heroAvatar = g.hero?.img || makeAvatarSVG(g.hero?.name || 'H', '#0284c7', 'HERO');
+      const villainAvatar = g.villain?.img || makeAvatarSVG(g.villain?.name || 'V', '#e11d48', 'VILLAIN');
+
+      const card = document.getElementById('detailModalCard');
+      card.style.borderColor = color;
+      card.style.boxShadow = `0 25px 80px -10px ${color}66`;
+
+      card.innerHTML = `
+        <button class="close-btn" onclick="closeDetailModal()">✕</button>
+        <div class="detail-layout" style="background: radial-gradient(circle at 85% 12%, ${color}48 0%, transparent 55%), linear-gradient(145deg, #111524 0%, #090b12 100%);">
+          <div class="detail-poster">
+            <img src="${cover}" alt="${g.title}" />
+          </div>
+          <div class="detail-Right">
+            <div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px;">
+                <span class="tier-badge tier-${tier}">${tier}-TIER</span>
+                <span class="genre-pill">${g.genre || 'Action'}</span>
+                <span style="font-size: 12px; color: var(--text-muted);">📅 ${g.year || '—'} • ⏱️ ${g.hours || 0} ч.</span>
+              </div>
+              <h2 style="font-size: 32px; font-weight: 900; line-height: 1.15;">${g.title}</h2>
+            </div>
+
+            <div style="padding: 16px; border-radius: 18px; background: rgba(0,0,0,0.45); border: 1px solid var(--border-light);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">Итоговый рейтинг</span>
+                <span style="font-size: 26px; font-weight: 900; font-family: 'Outfit'; color: ${color};">${sc.toFixed(1)} <small style="font-size: 12px; color: var(--text-muted);">/ 10</small></span>
+              </div>
+              <div class="detail-scores-grid">
+                <div class="score-cell"><span style="font-size:11px; color:var(--text-muted); display:block;">Сюжет</span><b style="font-size:16px;">${g.ratings.story}</b></div>
+                <div class="score-cell"><span style="font-size:11px; color:var(--text-muted); display:block;">Геймплей</span><b style="font-size:16px;">${g.ratings.gameplay}</b></div>
+                <div class="score-cell"><span style="font-size:11px; color:var(--text-muted); display:block;">Атмосфера</span><b style="font-size:16px;">${g.ratings.atmosphere}</b></div>
+                <div class="score-cell"><span style="font-size:11px; color:var(--text-muted); display:block;">Визуал</span><b style="font-size:16px;">${g.ratings.visuals}</b></div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px;">Противостояние в игре</div>
+              <div class="duel-cards-grid">
+                <div class="char-box-hero">
+                  <img src="${heroAvatar}" class="char-avatar" alt="" />
+                  <div>
+                    <span class="role-tag-hero">🛡️ Главный герой (ГГ)</span>
+                    <div style="font-size: 15px; font-weight: 800; margin-top: 2px;">${g.hero?.name || 'Не указан'}</div>
+                    <p style="font-size: 12px; color: #cbd5e1; margin-top: 4px;">${g.hero?.desc || 'Без описания'}</p>
+                  </div>
+                </div>
+                <div class="char-box-villain">
+                  <img src="${villainAvatar}" class="char-avatar" alt="" />
+                  <div>
+                    <span class="role-tag-villain">⚔️ Главный злодей</span>
+                    <div style="font-size: 15px; font-weight: 800; margin-top: 2px;">${g.villain?.name || 'Не указан'}</div>
+                    <p style="font-size: 12px; color: #cbd5e1; margin-top: 4px;">${g.villain?.desc || 'Без описания'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="padding: 14px 16px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-light);">
+              <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px;">Мои впечатления</span>
+              <p style="font-size: 13px; color: #e2e8f0;">${g.review || 'Заметок пока нет.'}</p>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+              <button onclick="deleteGame('${g.id}')" class="upload-btn" style="width: auto; padding: 10px 16px; color: #fda4af; border-color: rgba(244,63,94,0.3);">Удалить</button>
+              <button onclick="openGameModal('${g.id}')" class="btn-primary">Редактировать</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('detailModal').classList.add('open');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').classList.remove('open');
+    }
+
+    function openGameModal(editId = null) {
+      closeDetailModal();
+      const form = document.getElementById('gameForm');
+      form.reset();
+
+      if (editId) {
+        const g = games.find(x => x.id === editId);
+        if (!g) return;
+        document.getElementById('formModalTitle').textContent = 'Редактировать игру';
+        document.getElementById('gameId').value = g.id;
+        document.getElementById('gameTitle').value = g.title;
+        document.getElementById('gameGenre').value = g.genre || '';
+        document.getElementById('gameYear').value = g.year || '';
+        document.getElementById('gameHours').value = g.hours || 15;
+        document.getElementById('gameColor').value = g.color || '#7c3aed';
+        document.getElementById('gameFavorite').checked = !!g.favorite;
+
+        document.getElementById('coverData').value = g.coverUrl || '';
+        setPreviewState(g.coverUrl || '', 'coverPreviewImg', 'coverPlaceholder');
+
+        document.getElementById('heroName').value = g.hero?.name || '';
+        document.getElementById('heroDesc').value = g.hero?.desc || '';
+        document.getElementById('heroImgData').value = g.hero?.img || '';
+        setPreviewState(g.hero?.img || '', 'heroPreviewImg', 'heroPlaceholder');
+
+        document.getElementById('villainName').value = g.villain?.name || '';
+        document.getElementById('villainDesc').value = g.villain?.desc || '';
+        document.getElementById('villainImgData').value = g.villain?.img || '';
+        setPreviewState(g.villain?.img || '', 'villainPreviewImg', 'villainPlaceholder');
+
+        document.getElementById('rateStory').value = g.ratings.story;
+        document.getElementById('rateGameplay').value = g.ratings.gameplay;
+        document.getElementById('rateAtmosphere').value = g.ratings.atmosphere;
+        document.getElementById('rateVisuals').value = g.ratings.visuals;
+        document.getElementById('gameReview').value = g.review || '';
+      } else {
+        document.getElementById('formModalTitle').textContent = 'Добавить игру в PlayHub';
+        document.getElementById('gameId').value = '';
+        document.getElementById('gameColor').value = '#7c3aed';
+        document.getElementById('coverData').value = '';
+        document.getElementById('heroImgData').value = '';
+        document.getElementById('villainImgData').value = '';
+        setPreviewState('', 'coverPreviewImg', 'coverPlaceholder');
+        setPreviewState('', 'heroPreviewImg', 'heroPlaceholder');
+        setPreviewState('', 'villainPreviewImg', 'villainPlaceholder');
+      }
+
+      updateLiveFormScore();
+      document.getElementById('formModal').classList.add('open');
+    }
+
+    function closeFormModal() {
+      document.getElementById('formModal').classList.remove('open');
+    }
+
+    function updateLiveFormScore() {
+      const s = Number(document.getElementById('rateStory').value);
+      const gp = Number(document.getElementById('rateGameplay').value);
+      const a = Number(document.getElementById('rateAtmosphere').value);
+      const v = Number(document.getElementById('rateVisuals').value);
+      document.getElementById('valStory').textContent = s;
+      document.getElementById('valGameplay').textContent = gp;
+      document.getElementById('valAtmosphere').textContent = a;
+      document.getElementById('valVisuals').textContent = v;
+      const avg = ((s + gp + a + v) / 4).toFixed(1);
+      document.getElementById('formLiveTotal').textContent = `${avg} / 10 (${getTier(avg)}-Tier)`;
+    }
+
+    function saveGame(e) {
+      e.preventDefault();
+      const id = document.getElementById('gameId').value || ('game_' + Date.now());
+      const title = document.getElementById('gameTitle').value.trim();
+      const genre = document.getElementById('gameGenre').value.trim() || 'Action';
+      const year = document.getElementById('gameYear').value.trim() || '2025';
+      const hours = Number(document.getElementById('gameHours').value) || 12;
+      const color = document.getElementById('gameColor').value || '#7c3aed';
+      const coverUrl = document.getElementById('coverData').value || makePosterSVG(title.toUpperCase(), genre.toUpperCase(), color, '#090d16', color);
+
+      const obj = {
+        id, title, genre, year, hours, color, coverUrl,
+        favorite: document.getElementById('gameFavorite').checked,
+        ratings: {
+          story: Number(document.getElementById('rateStory').value),
+          gameplay: Number(document.getElementById('rateGameplay').value),
+          atmosphere: Number(document.getElementById('rateAtmosphere').value),
+          visuals: Number(document.getElementById('rateVisuals').value)
+        },
+        hero: {
+          name: document.getElementById('heroName').value.trim() || 'Не указан',
+          img: document.getElementById('heroImgData').value,
+          desc: document.getElementById('heroDesc').value.trim()
+        },
+        villain: {
+          name: document.getElementById('villainName').value.trim() || 'Не указан',
+          img: document.getElementById('villainImgData').value,
+          desc: document.getElementById('villainDesc').value.trim()
+        },
+        review: document.getElementById('gameReview').value.trim()
+      };
+
+      const idx = games.findIndex(x => x.id === id);
+      if (idx >= 0) games[idx] = obj;
+      else games.unshift(obj);
+
+      saveToStorage();
+      setAmbientColor(color);
+      closeFormModal();
+      renderAll();
+    }
+
+    function deleteGame(id) {
+      if (!confirm('Удалить игру из коллекции?')) return;
+      games = games.filter(x => x.id !== id);
+      saveToStorage();
+      closeDetailModal();
+      renderAll();
+    }
+
+    function toggleFavorite(e, id) {
+      e.stopPropagation();
+      const g = games.find(x => x.id === id);
+      if (g) { g.favorite = !g.favorite; saveToStorage(); renderAll(); }
+    }
+
+    function setFilter(f) {
+      currentFilter = f;
+      document.getElementById('filterAllBtn').classList.toggle('active', f === 'all');
+      document.getElementById('filterFavBtn').classList.toggle('active', f === 'fav');
+      renderAll();
+    }
+
+    function setView(v) {
+      currentView = v;
+      document.getElementById('viewGridBtn').classList.toggle('active', v === 'grid');
+      document.getElementById('viewTierBtn').classList.toggle('active', v === 'tier');
+      document.getElementById('gridView').classList.toggle('hidden', v !== 'grid');
+      document.getElementById('tierView').classList.toggle('hidden', v !== 'tier');
+      renderAll();
+    }
+
+    document.getElementById('detailModal').addEventListener('click', e => { if (e.target.id === 'detailModal') closeDetailModal(); });
+    document.getElementById('formModal').addEventListener('click', e => { if (e.target.id === 'formModal') closeFormModal(); });
+
+    function renderAll() {
+      renderStats();
+      const list = getFilteredGames();
+      renderGrid(list);
+      renderTierList(list);
+    }
+
+    loadGames();
+    if (games[0]?.color) {
+      currentRgb = hexToRgbArray(games[0].color);
+      setAmbientColor(games[0].color);
+    }
+    renderAll();
+  </script>
+</body>
+</html>
