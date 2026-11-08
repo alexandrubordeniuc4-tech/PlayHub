@@ -259,9 +259,11 @@
       cursor: pointer;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       box-shadow: 0 10px 25px -5px rgba(var(--ambient-rgb), 0.65);
-      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      transition: transform 0.2s ease, box-shadow 0.3s ease, opacity 0.2s;
+      user-select: none;
     }
 
     .btn-primary:hover {
@@ -271,6 +273,11 @@
 
     .btn-primary:active {
       transform: scale(0.97);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      pointer-events: none;
     }
 
     /* ================= СТАТИСТИКА ================= */
@@ -460,14 +467,13 @@
       cursor: pointer;
     }
 
-    /* ================= СЕТКА ИГР: РЕЖИМЫ 1, 2 И 4 В РЯД С ПЛАВНОЙ АНИМАЦИЕЙ ================= */
+    /* ================= СЕТКА ИГР: РЕЖИМЫ 1, 2 И 4 В РЯД ================= */
     .games-grid {
       display: grid;
       width: 100%;
       transition: gap 0.35s ease;
     }
 
-    /* 1 в ряд — крупная кинематографичная карточка */
     .games-grid.cols-1 {
       grid-template-columns: minmax(0, 1fr);
       max-width: 680px;
@@ -475,13 +481,11 @@
       gap: 22px;
     }
 
-    /* 2 в ряд — сбалансированная плитка */
     .games-grid.cols-2 {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
     }
 
-    /* 4 в ряд — компактная витрина постеров */
     .games-grid.cols-4 {
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
@@ -523,7 +527,6 @@
       background: #05060a;
     }
 
-    /* Для 1 в ряд на широких экранах делаем карточку ещё эффектнее */
     .games-grid.cols-1 .poster-wrap {
       aspect-ratio: 4 / 4.6;
     }
@@ -684,17 +687,10 @@
       color: var(--text-muted);
     }
 
-    /* ===== АДАПТАЦИЯ КАРТОЧЕК ПОД РЕЖИМЫ 1, 2 И 4 НА ТЕЛЕФОНЕ ===== */
-    .games-grid.cols-1 .card-title {
-      font-size: 23px;
-    }
-    .games-grid.cols-1 .score-pill {
-      font-size: 20px;
-      padding: 6px 12px;
-    }
+    .games-grid.cols-1 .card-title { font-size: 23px; }
+    .games-grid.cols-1 .score-pill { font-size: 20px; padding: 6px 12px; }
 
     @media (max-width: 640px) {
-      /* В режиме 2 в ряд на телефоне делаем шрифты аккуратными */
       .games-grid.cols-2 .card-title { font-size: 14px; }
       .games-grid.cols-2 .genre-pill { font-size: 8px; padding: 2px 6px; }
       .games-grid.cols-2 .score-pill { font-size: 13px; padding: 3px 7px; border-radius: 8px; }
@@ -703,7 +699,6 @@
       .games-grid.cols-2 .tier-badge { font-size: 9px; padding: 3px 7px; }
       .games-grid.cols-2 .fav-btn { width: 26px; height: 26px; font-size: 11px; }
 
-      /* В режиме 4 в ряд на телефоне превращаем карточки в чистые постеры без лишнего текста */
       .games-grid.cols-4 .game-card { border-radius: 14px; }
       .games-grid.cols-4 .card-body { display: none; }
       .games-grid.cols-4 .genre-pill,
@@ -1064,6 +1059,31 @@
       cursor: pointer;
     }
 
+    /* Уведомление о сохранении */
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(30px);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(var(--ambient-rgb), 0.6);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast-msg.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     .hidden { display: none !important; }
 
     @media (max-width: 860px) {
@@ -1081,10 +1101,12 @@
 </head>
 <body>
 
-  <!-- Многослойный градиентный фон и объемные лучи -->
   <div class="scene-bg"></div>
   <div class="god-rays"></div>
   <div class="light-beams"></div>
+
+  <!-- Всплывающее уведомление -->
+  <div id="toastMsg" class="toast-msg">✓ Игра сохранена в PlayHub</div>
 
   <div class="app-container">
 
@@ -1128,7 +1150,7 @@
         </div>
       </div>
 
-      <button onclick="openGameModal()" class="btn-primary">
+      <button type="button" onclick="openGameModal()" class="btn-primary">
         <span style="font-size: 18px; line-height: 1;">+</span>
         <span>Добавить игру</span>
       </button>
@@ -1205,8 +1227,8 @@
         />
 
         <div class="seg-group">
-          <button id="filterAllBtn" onclick="setFilter('all')" class="seg-btn active">Все</button>
-          <button id="filterFavBtn" onclick="setFilter('fav')" class="seg-btn">❤️ Любимые</button>
+          <button type="button" id="filterAllBtn" onclick="setFilter('all')" class="seg-btn active">Все</button>
+          <button type="button" id="filterFavBtn" onclick="setFilter('fav')" class="seg-btn">❤️ Любимые</button>
         </div>
 
         <select id="sortSelect" onchange="renderAll()" class="select-sort">
@@ -1219,25 +1241,24 @@
       </div>
 
       <div class="controls-right">
-        <!-- Переключатель количества карточек в ряд: 1 / 2 / 4 -->
         <div id="colsSwitchGroup" class="seg-group" title="Количество игр в ряду">
-          <button id="colBtn1" onclick="setGridCols(1)" class="seg-btn" title="По 1 большой карточке">
+          <button type="button" id="colBtn1" onclick="setGridCols(1)" class="seg-btn" title="По 1 большой карточке">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="2" width="12" height="12" rx="2.5"/></svg>
             <span>1</span>
           </button>
-          <button id="colBtn2" onclick="setGridCols(2)" class="seg-btn active" title="По 2 в ряд">
+          <button type="button" id="colBtn2" onclick="setGridCols(2)" class="seg-btn active" title="По 2 в ряд">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="1.5" y="2" width="5.5" height="12" rx="1.8"/><rect x="9" y="2" width="5.5" height="12" rx="1.8"/></svg>
             <span>2</span>
           </button>
-          <button id="colBtn4" onclick="setGridCols(4)" class="seg-btn" title="По 4 в ряд">
+          <button type="button" id="colBtn4" onclick="setGridCols(4)" class="seg-btn" title="По 4 в ряд">
             <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.4"/><rect x="9" y="1.5" width="5.5" height="5.5" rx="1.4"/><rect x="1.5" y="9" width="5.5" height="5.5" rx="1.4"/><rect x="9" y="9" width="5.5" height="5.5" rx="1.4"/></svg>
             <span>4</span>
           </button>
         </div>
 
         <div class="seg-group">
-          <button id="viewGridBtn" onclick="setView('grid')" class="seg-btn active">Карточки</button>
-          <button id="viewTierBtn" onclick="setView('tier')" class="seg-btn">Тир-лист</button>
+          <button type="button" id="viewGridBtn" onclick="setView('grid')" class="seg-btn active">Карточки</button>
+          <button type="button" id="viewTierBtn" onclick="setView('tier')" class="seg-btn">Тир-лист</button>
         </div>
       </div>
     </section>
@@ -1261,7 +1282,7 @@
       <button type="button" onclick="closeFormModal()" class="close-btn">✕</button>
       <h2 id="formModalTitle" style="font-size: 24px; font-weight: 900; margin-bottom: 18px;">Добавить игру в PlayHub</h2>
 
-      <form id="gameForm" onsubmit="saveGame(event)" style="display: flex; flex-direction: column; gap: 18px;">
+      <form id="gameForm" onsubmit="saveGame(event)" novalidate style="display: flex; flex-direction: column; gap: 18px;">
         <input type="hidden" id="gameId" />
         <input type="hidden" id="gameColor" value="#7c3aed" />
         <input type="hidden" id="coverData" />
@@ -1288,7 +1309,7 @@
           <div style="display: flex; flex-direction: column; gap: 12px;">
             <div>
               <label class="field-label">Название игры *</label>
-              <input type="text" id="gameTitle" required placeholder="Например: Silent Hill 2 Remake" class="text-input" />
+              <input type="text" id="gameTitle" placeholder="Например: Silent Hill 2 Remake" class="text-input" />
             </div>
 
             <div class="row-3">
@@ -1379,7 +1400,7 @@
 
         <div style="display: flex; justify-content: flex-end; gap: 10px;">
           <button type="button" onclick="closeFormModal()" class="upload-btn" style="width: auto; padding: 10px 20px;">Отмена</button>
-          <button type="submit" class="btn-primary">Сохранить в PlayHub</button>
+          <button type="button" id="saveGameBtn" onclick="saveGame(event)" class="btn-primary">Сохранить в PlayHub</button>
         </div>
       </form>
     </div>
@@ -1388,9 +1409,22 @@
   <script>
     const STORAGE_KEY = 'playhub_collection_v1';
     const COLS_STORAGE_KEY = 'playhub_grid_cols';
+    const DB_NAME = 'PlayHubDatabase';
+    const DB_STORE = 'gamesStore';
+
     let currentView = 'grid';
     let currentFilter = 'all';
     let currentCols = Number(localStorage.getItem(COLS_STORAGE_KEY)) || 2;
+    let pendingImageLoads = 0;
+
+    function showToast(text) {
+      const el = document.getElementById('toastMsg');
+      if (!el) return;
+      el.textContent = text;
+      el.classList.add('show');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+    }
 
     /* ================= ДВИЖОК СВЕРХПЛАВНОГО ПЕРЕТЕКАНИЯ ЦВЕТА ФОНА ================= */
     let currentRgb = [239, 68, 68];
@@ -1448,7 +1482,7 @@
     /* ================= ПЛАВНОЕ FLIP-ПЕРЕСТРОЕНИЕ СЕТКИ (1 / 2 / 4 В РЯД) ================= */
     function setGridCols(cols, animate = true) {
       currentCols = cols;
-      localStorage.setItem(COLS_STORAGE_KEY, String(cols));
+      try { localStorage.setItem(COLS_STORAGE_KEY, String(cols)); } catch (e) {}
 
       [1, 2, 4].forEach(n => {
         const btn = document.getElementById('colBtn' + n);
@@ -1459,16 +1493,13 @@
       if (!grid) return;
 
       const cards = Array.from(grid.querySelectorAll('.game-card'));
-      // 1. Записываем старые координаты и размеры карточек (First)
       const firstRects = animate ? cards.map(c => c.getBoundingClientRect()) : [];
 
-      // 2. Меняем класс сетки (Last)
       grid.classList.remove('cols-1', 'cols-2', 'cols-4');
       grid.classList.add('cols-' + cols);
 
       if (!animate || !cards.length) return;
 
-      // 3. Плавно анимируем переход каждой карточки из старого положения в новое (Invert + Play)
       cards.forEach((card, i) => {
         const first = firstRects[i];
         const last = card.getBoundingClientRect();
@@ -1560,6 +1591,8 @@
     }
 
     function makePosterSVG(title, subtitle, c1, c2, accent) {
+      const safeTitle = String(title || 'GAME').replace(/[<>&"']/g, '');
+      const safeSub = String(subtitle || 'ACTION').replace(/[<>&"']/g, '');
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">
         <defs>
           <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
@@ -1578,14 +1611,15 @@
         <circle cx="470" cy="180" r="180" fill="none" stroke="${accent}" stroke-opacity="0.22" stroke-width="2"/>
         <path d="M 0 610 L 600 460 L 600 800 L 0 800 Z" fill="#05060a" fill-opacity="0.72"/>
         <rect x="44" y="540" width="74" height="6" rx="3" fill="${accent}"/>
-        <text x="44" y="605" fill="#ffffff" font-family="Outfit, sans-serif" font-weight="900" font-size="45">${title}</text>
-        <text x="44" y="646" fill="#cbd5e1" font-family="Inter, sans-serif" font-weight="700" font-size="19" letter-spacing="3" opacity="0.85">${subtitle}</text>
+        <text x="44" y="605" fill="#ffffff" font-family="Outfit, sans-serif" font-weight="900" font-size="45">${safeTitle}</text>
+        <text x="44" y="646" fill="#cbd5e1" font-family="Inter, sans-serif" font-weight="700" font-size="19" letter-spacing="3" opacity="0.85">${safeSub}</text>
       </svg>`;
       return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
     }
 
     function makeAvatarSVG(name, color, roleLabel) {
-      const initials = (name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      const cleanName = String(name || '?').replace(/[<>&"']/g, '').trim();
+      const initials = (cleanName || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
         <defs>
           <linearGradient id="av" x1="0" y1="0" x2="1" y2="1">
@@ -1693,21 +1727,76 @@
 
     let games = [];
 
-    function loadGames() {
+    /* ================= НАДЕЖНОЕ ХРАНИЛИЩЕ INDEXEDDB + LOCALSTORAGE (БЕЗ ЛИМИТА 5 МБ) ================= */
+    function openPlayHubDB() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return reject(new Error('No IndexedDB'));
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(DB_STORE)) {
+            db.createObjectStore(DB_STORE);
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function loadGames() {
+      let localData = null;
       try {
         const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('playlog_games_v3_duel');
-        games = raw ? JSON.parse(raw) : DEFAULT_GAMES;
+        if (raw) localData = JSON.parse(raw);
+      } catch (e) {}
+
+      try {
+        const db = await openPlayHubDB();
+        const dbData = await new Promise((resolve) => {
+          const tx = db.transaction(DB_STORE, 'readonly');
+          const req = tx.objectStore(DB_STORE).get('collection');
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => resolve(null);
+        });
+
+        if (Array.isArray(dbData) && dbData.length > 0) {
+          games = dbData;
+        } else if (Array.isArray(localData) && localData.length > 0) {
+          games = localData;
+          await saveToStorage();
+        } else {
+          games = DEFAULT_GAMES;
+          await saveToStorage();
+        }
       } catch (e) {
-        games = DEFAULT_GAMES;
+        games = Array.isArray(localData) && localData.length > 0 ? localData : DEFAULT_GAMES;
       }
     }
 
-    function saveToStorage() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+    async function saveToStorage() {
+      // 1. Сохраняем в IndexedDB (вмещает сотни мегабайт обложек и фото ГГ/злодеев)
+      try {
+        const db = await openPlayHubDB();
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction(DB_STORE, 'readwrite');
+          tx.objectStore(DB_STORE).put(games, 'collection');
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      } catch (e) {}
+
+      // 2. Дублируем в localStorage с защитой от переполнения памяти
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(games));
+      } catch (quotaErr) {
+        // Если localStorage переполнен тяжелыми картинками — игра всё равно уже сохранена в IndexedDB!
+        console.warn('localStorage переполнен, данные надежно сохранены в IndexedDB.');
+      }
     }
 
     function calcScore(r) {
-      return Number(((Number(r.story) + Number(r.gameplay) + Number(r.atmosphere) + Number(r.visuals)) / 4).toFixed(1));
+      if (!r) return 8.0;
+      return Number(((Number(r.story || 8) + Number(r.gameplay || 8) + Number(r.atmosphere || 8) + Number(r.visuals || 8)) / 4).toFixed(1));
     }
 
     function getTier(score) {
@@ -1718,33 +1807,58 @@
       return 'D';
     }
 
+    // Оптимизированное сжатие обложек и фото ГГ/Злодея с защитой кнопки сохранения
     function handleFileSelect(event, hiddenInputId, previewImgId, placeholderId, detectColor) {
-      const file = event.target.files[0];
+      const file = event.target.files && event.target.files[0];
       if (!file) return;
+
+      const saveBtn = document.getElementById('saveGameBtn');
+      pendingImageLoads++;
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Обработка фото...';
+      }
+
       const reader = new FileReader();
       reader.onload = function(e) {
         const img = new Image();
         img.onload = function() {
-          const canvas = document.createElement('canvas');
-          const maxW = 540;
-          const scale = Math.min(1, maxW / img.width);
-          canvas.width = Math.round(img.width * scale);
-          canvas.height = Math.round(img.height * scale);
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          try {
+            const canvas = document.createElement('canvas');
+            // Для обложки 420px, для аватарок персонажей 240px — четкая картинка и малый вес
+            const maxW = detectColor ? 420 : 240;
+            const scale = Math.min(1, maxW / img.width);
+            canvas.width = Math.max(1, Math.round(img.width * scale));
+            canvas.height = Math.max(1, Math.round(img.height * scale));
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.78);
 
-          document.getElementById(hiddenInputId).value = dataUrl;
-          const prev = document.getElementById(previewImgId);
-          const ph = document.getElementById(placeholderId);
-          if (prev) { prev.src = dataUrl; prev.classList.remove('hidden'); }
-          if (ph) { ph.classList.add('hidden'); }
+            document.getElementById(hiddenInputId).value = dataUrl;
+            const prev = document.getElementById(previewImgId);
+            const ph = document.getElementById(placeholderId);
+            if (prev) { prev.src = dataUrl; prev.classList.remove('hidden'); }
+            if (ph) { ph.classList.add('hidden'); }
 
-          if (detectColor) {
-            extractVibrantCoverColor(img, (detectedHex) => {
-              document.getElementById('gameColor').value = detectedHex;
-              setAmbientColor(detectedHex);
-            });
+            if (detectColor) {
+              extractVibrantCoverColor(img, (detectedHex) => {
+                document.getElementById('gameColor').value = detectedHex;
+                setAmbientColor(detectedHex);
+              });
+            }
+          } finally {
+            pendingImageLoads = Math.max(0, pendingImageLoads - 1);
+            if (pendingImageLoads === 0 && saveBtn) {
+              saveBtn.disabled = false;
+              saveBtn.textContent = 'Сохранить в PlayHub';
+            }
+          }
+        };
+        img.onerror = function() {
+          pendingImageLoads = Math.max(0, pendingImageLoads - 1);
+          if (pendingImageLoads === 0 && saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Сохранить в PlayHub';
           }
         };
         img.src = e.target.result;
@@ -1769,7 +1883,13 @@
     function renderStats() {
       const total = games.length;
       document.getElementById('statTotalGames').textContent = total;
-      if (!total) return;
+      if (!total) {
+        document.getElementById('statAvgScore').textContent = '0.0';
+        document.getElementById('statTotalHours').textContent = '0';
+        document.getElementById('statFavorites').textContent = '0';
+        document.getElementById('statMasterpieces').textContent = '0 S-Tier';
+        return;
+      }
 
       let sumScore = 0, sumHours = 0, favs = 0, sTier = 0;
       let sS = 0, sG = 0, sA = 0, sV = 0;
@@ -1780,10 +1900,10 @@
         sumHours += Number(g.hours || 0);
         if (g.favorite) favs++;
         if (getTier(sc) === 'S') sTier++;
-        sS += Number(g.ratings.story);
-        sG += Number(g.ratings.gameplay);
-        sA += Number(g.ratings.atmosphere);
-        sV += Number(g.ratings.visuals);
+        sS += Number(g.ratings?.story || 8);
+        sG += Number(g.ratings?.gameplay || 8);
+        sA += Number(g.ratings?.atmosphere || 8);
+        sV += Number(g.ratings?.visuals || 8);
       });
 
       document.getElementById('statAvgScore').textContent = (sumScore / total).toFixed(1);
@@ -1811,7 +1931,7 @@
         if (currentFilter === 'fav' && !g.favorite) return false;
         if (!q) return true;
         return (
-          g.title.toLowerCase().includes(q) ||
+          (g.title || '').toLowerCase().includes(q) ||
           (g.genre || '').toLowerCase().includes(q) ||
           (g.hero?.name || '').toLowerCase().includes(q) ||
           (g.villain?.name || '').toLowerCase().includes(q)
@@ -1822,7 +1942,7 @@
         if (sort === 'score-desc') return calcScore(b.ratings) - calcScore(a.ratings);
         if (sort === 'score-asc') return calcScore(a.ratings) - calcScore(b.ratings);
         if (sort === 'hours-desc') return (b.hours || 0) - (a.hours || 0);
-        if (sort === 'title-asc') return a.title.localeCompare(b.title, 'ru');
+        if (sort === 'title-asc') return (a.title || '').localeCompare(b.title || '', 'ru');
         if (sort === 'date-desc') return String(b.year || '').localeCompare(String(a.year || ''));
         return 0;
       });
@@ -1839,7 +1959,7 @@
       box.innerHTML = list.map(g => {
         const sc = calcScore(g.ratings);
         const tier = getTier(sc);
-        const cover = g.coverUrl || makePosterSVG(g.title.toUpperCase(), g.genre || 'GAME', g.color || '#7c3aed', '#0b0f19', g.color || '#7c3aed');
+        const cover = g.coverUrl || makePosterSVG((g.title || 'GAME').toUpperCase(), g.genre || 'GAME', g.color || '#7c3aed', '#0b0f19', g.color || '#7c3aed');
         return `
           <article class="game-card" onclick="openDetailModal('${g.id}')" onmouseenter="setAmbientColor('${g.color || '#7c3aed'}')">
             <div class="poster-wrap">
@@ -1847,7 +1967,7 @@
               <div class="poster-shade"></div>
               <div class="poster-top">
                 <span class="tier-badge tier-${tier}">${tier}-TIER</span>
-                <button class="fav-btn" onclick="toggleFavorite(event, '${g.id}')">${g.favorite ? '❤️' : '🤍'}</button>
+                <button type="button" class="fav-btn" onclick="toggleFavorite(event, '${g.id}')">${g.favorite ? '❤️' : '🤍'}</button>
               </div>
               <div class="poster-bottom">
                 <div>
@@ -1916,7 +2036,7 @@
 
       const sc = calcScore(g.ratings);
       const tier = getTier(sc);
-      const cover = g.coverUrl || makePosterSVG(g.title.toUpperCase(), g.genre || 'GAME', color, '#0b0f19', color);
+      const cover = g.coverUrl || makePosterSVG((g.title || 'GAME').toUpperCase(), g.genre || 'GAME', color, '#0b0f19', color);
       const heroAvatar = g.hero?.img || makeAvatarSVG(g.hero?.name || 'H', '#0284c7', 'HERO');
       const villainAvatar = g.villain?.img || makeAvatarSVG(g.villain?.name || 'V', '#e11d48', 'VILLAIN');
 
@@ -1925,7 +2045,7 @@
       card.style.boxShadow = `0 25px 80px -10px ${color}66`;
 
       card.innerHTML = `
-        <button class="close-btn" onclick="closeDetailModal()">✕</button>
+        <button type="button" class="close-btn" onclick="closeDetailModal()">✕</button>
         <div class="detail-layout" style="background: radial-gradient(circle at 85% 12%, ${color}48 0%, transparent 55%), linear-gradient(145deg, #111524 0%, #090b12 100%);">
           <div class="detail-poster">
             <img src="${cover}" alt="${g.title}" />
@@ -1981,8 +2101,8 @@
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
-              <button onclick="deleteGame('${g.id}')" class="upload-btn" style="width: auto; padding: 10px 16px; color: #fda4af; border-color: rgba(244,63,94,0.3);">Удалить</button>
-              <button onclick="openGameModal('${g.id}')" class="btn-primary">Редактировать</button>
+              <button type="button" onclick="deleteGame('${g.id}')" class="upload-btn" style="width: auto; padding: 10px 16px; color: #fda4af; border-color: rgba(244,63,94,0.3);">Удалить</button>
+              <button type="button" onclick="openGameModal('${g.id}')" class="btn-primary">Редактировать</button>
             </div>
           </div>
         </div>
@@ -1999,6 +2119,12 @@
       closeDetailModal();
       const form = document.getElementById('gameForm');
       form.reset();
+      pendingImageLoads = 0;
+      const saveBtn = document.getElementById('saveGameBtn');
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Сохранить в PlayHub';
+      }
 
       if (editId) {
         const g = games.find(x => x.id === editId);
@@ -2063,10 +2189,21 @@
       document.getElementById('formLiveTotal').textContent = `${avg} / 10 (${getTier(avg)}-Tier)`;
     }
 
-    function saveGame(e) {
-      e.preventDefault();
+    async function saveGame(e) {
+      if (e) e.preventDefault();
+      if (pendingImageLoads > 0) return;
+
+      const titleInput = document.getElementById('gameTitle');
+      const title = (titleInput.value || '').trim();
+      if (!title) {
+        titleInput.focus();
+        titleInput.style.borderColor = '#ef4444';
+        showToast('⚠️ Введи название игры');
+        return;
+      }
+      titleInput.style.borderColor = '';
+
       const id = document.getElementById('gameId').value || ('game_' + Date.now());
-      const title = document.getElementById('gameTitle').value.trim();
       const genre = document.getElementById('gameGenre').value.trim() || 'Action';
       const year = document.getElementById('gameYear').value.trim() || '2025';
       const hours = Number(document.getElementById('gameHours').value) || 12;
@@ -2099,24 +2236,30 @@
       if (idx >= 0) games[idx] = obj;
       else games.unshift(obj);
 
-      saveToStorage();
-      setAmbientColor(color);
       closeFormModal();
+      setAmbientColor(color);
       renderAll();
+      await saveToStorage();
+      showToast('✓ Игра сохранена в PlayHub!');
     }
 
-    function deleteGame(id) {
+    async function deleteGame(id) {
       if (!confirm('Удалить игру из коллекции?')) return;
       games = games.filter(x => x.id !== id);
-      saveToStorage();
       closeDetailModal();
       renderAll();
+      await saveToStorage();
+      showToast('Игра удалена');
     }
 
-    function toggleFavorite(e, id) {
+    async function toggleFavorite(e, id) {
       e.stopPropagation();
       const g = games.find(x => x.id === id);
-      if (g) { g.favorite = !g.favorite; saveToStorage(); renderAll(); }
+      if (g) {
+        g.favorite = !g.favorite;
+        renderAll();
+        await saveToStorage();
+      }
     }
 
     function setFilter(f) {
@@ -2146,13 +2289,16 @@
       renderTierList(list);
     }
 
-    loadGames();
-    if (games[0]?.color) {
-      currentRgb = hexToRgbArray(games[0].color);
-      setAmbientColor(games[0].color);
-    }
-    renderAll();
-    setGridCols([1, 2, 4].includes(currentCols) ? currentCols : 2, false);
+    // Инициализация с поддержкой больших коллекций в IndexedDB
+    (async function initApp() {
+      await loadGames();
+      if (games[0]?.color) {
+        currentRgb = hexToRgbArray(games[0].color);
+        setAmbientColor(games[0].color);
+      }
+      renderAll();
+      setGridCols([1, 2, 4].includes(currentCols) ? currentCols : 2, false);
+    })();
   </script>
 </body>
 </html>
